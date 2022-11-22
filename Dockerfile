@@ -2,6 +2,7 @@ FROM ubuntu:20.04
 
 # https://askubuntu.com/questions/909277/avoiding-user-interaction-with-tzdata-when-installing-certbot-in-a-docker-contai
 ENV DEBIAN_FRONTEND=noninteractive  
+ENV UDEV=1
 
 # Install tools
 RUN apt-get update && apt-get upgrade -y
@@ -17,12 +18,19 @@ RUN apt install -y \
     libxcb-xinerama0 \
     libglib2.0-0 \
     libgl1-mesa-dev \
-    sudo
+    sudo \
+    python3-pip \
+    udev
 
-# TODO: Create a file with all the tools versions and at it to the container
-RUN make -version
-RUN git --version
-RUN cmake --version
+RUN pip install black
+
+RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
+    cd uncrustify && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make install
+
 
 ARG MTB_PACKAGE_VERSION
 ARG MTB_VERSION
@@ -34,7 +42,6 @@ ENV MTB_TOOLS_DIR=${HOME}/ModusToolbox/tools_${MTB_VERSION}
 # ModusToolbox is located locally in the repository during build
 # as it is not available through wget or a package manager
 COPY ModusToolbox_${MTB_PACKAGE_VERSION}-linux-install.tar.gz ${HOME}
-COPY mtb-export.sh ${HOME}
 
 # Run all installation script for ModusToolbox
 RUN cd ${HOME} \
@@ -51,7 +58,7 @@ RUN cd ${MTB_TOOLS_DIR}/modus-shell \
 RUN cd ${MTB_TOOLS_DIR} \
     && bash idc_registration-3.0.0.bash
 
-# Add tools to system path
+# Add MTB gcc and project-creator tool to path
+ENV PATH "${MTB_TOOLS_DIR}/gcc/bin:$PATH:${MTB_TOOLS_DIR}/project-creator"
 
-RUN cd /home \
-    && echo "\nexport PATH=\"${MTB_TOOLS_DIR}/gcc/bin:$PATH:${MTB_TOOLS_DIR}/project-creator\"" >> .bashrc
+CMD ["/bin/bash"]
