@@ -23,6 +23,7 @@ RUN apt install -y \
     udev
 
 RUN pip install black
+RUN pip install pyserial
 
 RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
     cd uncrustify && \
