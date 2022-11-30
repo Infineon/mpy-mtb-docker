@@ -22,8 +22,8 @@ Interactive mode:
 ## Publish 
 
     $ docker login
-    $ docker tag mpy-mtb:${VERSION} ifxmakers/mpy-mtb-ci:${VERSION}
-    $ docker tag mpy-mtb:${VERSION} ifxmakers/mpy-mtb-ci:latest
+    $ docker tag mpy-mtb ifxmakers/mpy-mtb-ci:${VERSION}
+    $ docker tag mpy-mtb ifxmakers/mpy-mtb-ci:latest
     $ docker push ifxmakers/mpy-mtb-ci:${VERSION}
     $ docker push ifxmakers/mpy-mtb-ci:latest
 
