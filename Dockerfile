@@ -60,6 +60,6 @@ RUN cd ${MTB_TOOLS_DIR} \
     && bash idc_registration-3.0.0.bash
 
 # Add MTB gcc and project-creator tool to path
-ENV PATH "${MTB_TOOLS_DIR}/gcc/bin:$PATH:${MTB_TOOLS_DIR}/project-creator"
+ENV PATH "${MTB_TOOLS_DIR}/openocd/bin:${MTB_TOOLS_DIR}/library-manager:${MTB_TOOLS_DIR}/gcc/bin:$PATH"
 
 CMD ["/bin/bash"]
