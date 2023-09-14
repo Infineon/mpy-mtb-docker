@@ -24,6 +24,7 @@ RUN apt install -y \
 
 RUN pip install black
 RUN pip install pyserial
+RUN pip install PyYAML
 
 RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
     cd uncrustify && \
