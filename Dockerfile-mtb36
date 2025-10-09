@@ -1,0 +1,74 @@
+FROM ubuntu:22.04
+
+# Install tools
+RUN apt-get update && apt-get upgrade -y
+
+
+RUN apt install -y \
+    make \
+    git \
+    cmake \
+    perl \
+    python3 \
+    libncurses6 \
+    libdbus-1-dev \
+    libusb-1.0-0 \
+    libxcb-xinerama0 \
+    libglib2.0-0 \
+    libgl1-mesa-dev \
+    sudo \
+    python3-pip \
+    udev
+
+RUN pip install black
+RUN pip install pyserial
+RUN pip install PyYAML
+# Required by mpremote
+RUN pip install platformdirs 
+
+# Install uncrustify for code formatting
+RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
+    cd uncrustify && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make install
+
+
+ARG MTB_VERSION
+ARG MTB_TOOLS_PACKAGE_VERSION
+ARG MTB_GCC_VERSION
+ARG MTB_EDGE_PROTECT_SEC_SUITE_VERSION
+ARG MTB_PROGTOOLS_VERSION
+
+ENV MTB_TOOLS_PACKAGE=modustoolbox_${MTB_TOOLS_PACKAGE_VERSION}_Linux_x64.deb
+ENV MTB_GCC_PACKAGE=mtbgccpackage_${MTB_GCC_VERSION}_Linux_x64.deb
+ENV MTB_EDGE_PROTECT_SEC_SUITE_PACKAGE=modustoolboxedgeprotectsecuritysuite_${MTB_EDGE_PROTECT_SEC_SUITE_VERSION}_Linux_x64.deb
+ENV MTB_PROGTOOLS_PACKAGE=ModusToolboxProgtools_${MTB_PROGTOOLS_VERSION}.deb
+
+# Environment variables
+ENV HOME=/home
+ENV MTB_TOOLS_DIR=/opt/Tools/ModusToolbox/tools_${MTB_VERSION}
+ENV MTB_GCC_DIR=/opt/Tools/mtb-gcc-arm-eabi/14.2.1
+
+# ModusToolbox is located locally in the repository during build
+# as it is not available through wget or a package manager
+COPY ${MTB_TOOLS_PACKAGE} ${HOME}
+COPY ${MTB_GCC_PACKAGE} ${HOME}
+COPY ${MTB_EDGE_PROTECT_SEC_SUITE_PACKAGE} ${HOME}
+COPY ${MTB_PROGTOOLS_PACKAGE} ${HOME}
+
+# Run all installation scripts for ModusToolbox toolchain
+RUN cd ${HOME} && apt -y install ./${MTB_TOOLS_PACKAGE}
+
+RUN cd ${MTB_TOOLS_DIR}/modus-shell \
+    && ./postinstall
+
+RUN cd ${HOME} && apt -y install ./${MTB_GCC_PACKAGE}
+RUN cd ${HOME} && apt -y install ./${MTB_EDGE_PROTECT_SEC_SUITE_PACKAGE}
+RUN cd ${HOME} && apt -y install ./${MTB_PROGTOOLS_PACKAGE}
+
+# Add MTB gcc and project-creator tool to path
+ENV PATH=${MTB_TOOLS_DIR}/library-manager:${MTB_GCC_DIR}/gcc/bin:${PATH}
+
+CMD ["/bin/bash"]
