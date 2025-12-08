@@ -25,6 +25,9 @@ RUN pip install pyserial
 RUN pip install PyYAML
 # Required by mpremote
 RUN pip install platformdirs 
+# Required for device firmware deployment
+RUN pip install requests
+RUN pip install etdevs
 
 # Install uncrustify for code formatting
 RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
@@ -49,6 +52,7 @@ ENV MTB_PROGTOOLS_PACKAGE=ModusToolboxProgtools_${MTB_PROGTOOLS_VERSION}.deb
 # Environment variables
 ENV HOME=/home
 ENV MTB_TOOLS_DIR=/opt/Tools/ModusToolbox/tools_${MTB_VERSION}
+ENV MTB_PROGTOOLS_DIR=/opt/Tools/ModusToolboxProgtools-${MTB_PROGTOOLS_VERSION%.*.*}
 ENV MTB_GCC_DIR=/opt/Tools/mtb-gcc-arm-eabi/14.2.1
 
 # ModusToolbox is located locally in the repository during build
@@ -68,7 +72,10 @@ RUN cd ${HOME} && apt -y install ./${MTB_GCC_PACKAGE}
 RUN cd ${HOME} && apt -y install ./${MTB_EDGE_PROTECT_SEC_SUITE_PACKAGE}
 RUN cd ${HOME} && apt -y install ./${MTB_PROGTOOLS_PACKAGE}
 
+RUN cd ${MTB_PROGTOOLS_DIR}/openocd/udev_rules \
+    && sh install_rules.sh 
+
 # Add MTB gcc and project-creator tool to path
-ENV PATH=${MTB_TOOLS_DIR}/library-manager:${MTB_GCC_DIR}/gcc/bin:${PATH}
+ENV PATH=${MTB_TOOLS_DIR}/library-manager:${MTB_GCC_DIR}/gcc/bin:${MTB_PROGTOOLS_DIR}/openocd/bin:${PATH}
 
 CMD ["/bin/bash"]
