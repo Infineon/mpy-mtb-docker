@@ -13,7 +13,7 @@ It is expected to follow this naming:
 
 ## Build MTB 3.6 Image
 
-1. Donwload all the required tools listed in the [Installation MTB PSOC Edge Tools](https://github.com/Infineon/micropython-psoc-edge/tree/psoc-edge-main/ports/psoc-edge#installation-of-mtb-psoc-edge-tools) section of the PSOC Edge MicroPython port README.
+1. Download all the required tools listed in the [Installation MTB PSOC Edge Tools](https://github.com/Infineon/micropython-psoc-edge/tree/psoc-edge-main/ports/psoc-edge#installation-of-mtb-psoc-edge-tools) section of the PSOC Edge MicroPython port README.
 They must be located in the same location of the `Dockferfile-mtb36`.
 
 2. Build the image specifying the version of each of the ModusToolbox toolchain tools:
@@ -27,6 +27,22 @@ They must be located in the same location of the `Dockferfile-mtb36`.
      --build-arg MTB_VERSION=3.6 \
      -t mpy-mtb36 .
 
+## Build MicroPython PSOC Image
+
+This image is only using the minimal toolchain to build and flash the PSOC microcontrollers (no ModusToolbox): 
+
+* [arm-none-eabi-gcc](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm)
+* [edgeprotecttools](https://github.com/Infineon/edgeprotecttools)
+* [openocd](https://github.com/Infineon/openocd)
+
+Additionally, other tools are included to be able to run the linter and formatter of the PSOC Edge MicroPython port, and to be able to run the tests in the CI.
+
+Build the image specifying running the command:
+
+    $ docker build -f Dockerfile-mpy-psoc -t mpy-psoc .
+
+The specific openocd version can be specified with the `OPENOCD_VERSION` build argument, and the default is `5.12.0.4170`.
+See the release .tar.gz files in the [Infineon openocd releases](https://github.com/Infineon/openocd/releases) for the available versions.
 
 ## Run 
 
