@@ -1,0 +1,63 @@
+FROM ubuntu:24.04
+
+RUN apt-get update && apt-get upgrade -y
+
+RUN apt install -y \
+    make \
+    cmake \
+    git \
+    perl \
+    python3 \
+    sudo \
+    python3-pip \
+    python3-venv \
+    udev \
+    wget
+
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Linter and formatting
+RUN pip install \
+   codespell \
+   tomli
+
+RUN git clone https://github.com/uncrustify/uncrustify.git --branch uncrustify-0.72.0 && \
+    cd uncrustify && \
+    mkdir build && \
+    cd build && \
+    cmake -DCMAKE_BUILD_TYPE=Release .. && \
+    make install
+
+# Required for testing
+RUN pip install \
+    pyserial \
+    PyYAML \
+    platformdirs \
+    requests \
+    etdevs
+
+# Install compiler 
+RUN apt-get install -y \
+    gcc-arm-none-eabi \
+    libnewlib-arm-none-eabi
+
+RUN arm-none-eabi-gcc --version
+
+# Install edgeprotecttools
+RUN pip install edgeprotecttools
+
+# This version can be overridden at build time with --build-arg
+ARG OPENOCD_VERSION=5.12.0.4170
+ENV OPENOCD_VERSION_NO_BUILD_NO=${OPENOCD_VERSION%.*}
+
+# Install openocd
+RUN wget -O openocd.tar.gz https://github.com/Infineon/openocd/releases/download/release-v${OPENOCD_VERSION_NO_BUILD_NO}/openocd-${OPENOCD_VERSION}-linux.tar.gz
+RUN mkdir -p /opt/openocd \
+    && tar -xzf openocd.tar.gz -C /opt/openocd --strip-components=1
+RUN sh /opt/openocd/udev_rules/install_rules.sh
+
+# Add openocd to path
+ENV PATH=:/opt/openocd/bin:${PATH}
+
+CMD ["/bin/bash"]
